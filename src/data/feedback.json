@@ -1,0 +1,52 @@
+{
+  "Rancho Bernardo-Glassman": {
+    "skillSum": 7,
+    "skillCount": 2,
+    "crowdVotes": {
+      "Empty": 1,
+      "Moderate": 1,
+      "Full": 9
+    },
+    "lastUpdated": "2026-01-28T08:57:50.695Z"
+  },
+  "Balboa Park Activity Center": {
+    "skillSum": 4,
+    "skillCount": 1,
+    "crowdVotes": {
+      "Empty": 0,
+      "Moderate": 0,
+      "Full": 1
+    },
+    "lastUpdated": "2026-01-28T08:57:58.062Z"
+  },
+  "Nobel Rec Center": {
+    "skillSum": 2,
+    "skillCount": 1,
+    "crowdVotes": {
+      "Empty": 0,
+      "Moderate": 0,
+      "Full": 0
+    },
+    "lastUpdated": "2026-01-28T09:11:51.186Z"
+  },
+  "Coronado Community Center": {
+    "skillSum": 2,
+    "skillCount": 1,
+    "crowdVotes": {
+      "Empty": 0,
+      "Moderate": 0,
+      "Full": 0
+    },
+    "lastUpdated": "2026-01-28T09:15:28.180Z"
+  },
+  "Black Mountain Multi-Purpose": {
+    "skillSum": 4,
+    "skillCount": 1,
+    "crowdVotes": {
+      "Empty": 0,
+      "Moderate": 0,
+      "Full": 1
+    },
+    "lastUpdated": "2026-01-28T09:26:31.534Z"
+  }
+}

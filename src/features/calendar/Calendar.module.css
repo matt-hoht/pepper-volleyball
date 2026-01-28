@@ -1,0 +1,250 @@
+.calendarContainer {
+    padding: 2rem;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.viewTabs {
+    display: flex;
+    gap: 0.5rem;
+    background: hsla(210, 40%, 98%, 0.05);
+    padding: 0.25rem;
+    border-radius: 1rem;
+}
+
+.currentDateDisplay {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.scrollWrapper {
+    height: 600px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border);
+    scrollbar-gutter: stable;
+}
+
+.dayGrid {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    position: relative;
+}
+
+.timeColumn {
+    display: flex;
+    flex-direction: column;
+}
+
+.timeSlot {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    opacity: 0.4;
+    border-bottom: 1px solid var(--border);
+}
+
+.eventsColumn {
+    position: relative;
+    background: repeating-linear-gradient(to bottom,
+            transparent,
+            transparent 79.5px,
+            var(--border) 80px);
+}
+
+.eventCard {
+    margin: 0.5rem;
+    padding: 0.75rem !important;
+    border-left: 4px solid var(--primary) !important;
+}
+
+.eventTime {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.eventGym {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.eventTimeShadow {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.eventGymSmall {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.navigation {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.weekGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+    height: 600px;
+    border-top: 1px solid var(--border);
+}
+
+.weekDayColumn {
+    background: var(--background);
+    display: flex;
+    flex-direction: column;
+}
+
+.weekDayHeader {
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--primary);
+    border-bottom: 1px solid var(--border);
+    background: hsla(210, 40%, 98%, 0.05);
+}
+
+.weekEvents {
+    position: relative;
+    flex: 1;
+    background: repeating-linear-gradient(to bottom,
+            transparent,
+            transparent 19%,
+            var(--border) 20%);
+}
+
+.miniEvent {
+    position: absolute;
+    padding: 4px;
+    background: var(--card-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--primary);
+    border-left: 3px solid var(--primary);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 1;
+}
+
+.miniTime {
+    font-size: 0.6rem;
+    opacity: 0.7;
+    font-weight: 800;
+}
+
+.monthGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border);
+}
+
+.monthDay {
+    background: var(--background);
+    min-height: 80px;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.dayNum {
+    font-size: 0.75rem;
+    opacity: 0.5;
+}
+
+.placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    opacity: 0.2;
+}
+
+/* Modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal {
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.modalTitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.modalInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: hsla(210, 40%, 98%, 0.05);
+    border-radius: 0.75rem;
+}
+
+.infoRow {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.infoLabel {
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 70px;
+}
+
+.modalFooter {
+    margin-top: 0.5rem;
+}

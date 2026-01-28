@@ -1,0 +1,129 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    margin-top: 1rem;
+}
+
+.metric {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.metricHeader {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--foreground);
+    opacity: 0.8;
+}
+
+.valueLabel {
+    color: var(--primary);
+    background: hsla(199, 89%, 48%, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.rangeLabels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    opacity: 0.8;
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+.crowdOptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.crowdBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px;
+    background: hsla(210, 40%, 98%, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.crowdBtn.active {
+    background: hsla(199, 89%, 48%, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.icon {
+    font-size: 1.4rem;
+}
+
+.label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--foreground);
+    opacity: 0.9;
+}
+
+.crowdBtn.active .label {
+    color: var(--primary);
+    opacity: 1;
+}
+
+.crowdBtn:disabled {
+    cursor: default;
+    opacity: 0.6;
+    transform: none;
+}
+
+.slider:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.avgBadge {
+    background: var(--primary);
+    color: white;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+}
+
+.voteCount {
+    font-size: 0.65rem;
+    opacity: 0.8;
+    font-weight: 800;
+    margin-top: 2px;
+    color: var(--foreground);
+}

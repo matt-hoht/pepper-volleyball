@@ -1,0 +1,193 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 3rem;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 3.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.date {
+    font-size: 1.25rem;
+    color: var(--primary);
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    border-left: 4px solid var(--primary);
+    padding-left: 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.sessionCard {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sessionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time {
+    background: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cost {
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+.gymName {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.address {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+
+.notes {
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 0.5rem;
+    background: hsla(210, 40%, 98%, 0.05);
+    border-radius: 0.5rem;
+}
+
+.actions {
+    margin-top: auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.shareBtn {
+    background: hsla(14, 100%, 57%, 0.1);
+    border: 1px solid var(--secondary);
+    color: var(--secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    flex: 1;
+}
+
+.shareBtn:hover {
+    background: var(--secondary);
+    color: white;
+}
+
+.travelTime {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+}
+
+.copyBtn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    width: 100%;
+    flex: 2;
+}
+
+.copyBtn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.noSessions {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    opacity: 0.5;
+}
+
+.geoBtn {
+    margin-top: 1.5rem;
+    background: linear-gradient(135deg, var(--primary) 0%, #2563eb 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 2rem;
+    font-weight: 700;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 15px var(--primary-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: glow 3s infinite alternate;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    100% {
+        box-shadow: 0 0 25px var(--primary), 0 0 10px var(--primary-glow);
+    }
+}
+
+.geoBtn:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px var(--primary-glow);
+}
+
+.geoBtn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+    background: var(--surface);
+}
+
+.originIndicator {
+    margin-top: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.25rem;
+    background: hsla(199, 89%, 48%, 0.1);
+    border: 1px solid var(--primary-glow);
+    border-radius: 2rem;
+    font-size: 0.9rem;
+    color: var(--foreground);
+    backdrop-filter: blur(8px);
+}
+
+.originIndicator strong {
+    color: var(--primary);
+}
+
+.calendarSection {
+    margin-top: 4rem;
+}

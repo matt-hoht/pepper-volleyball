@@ -1,0 +1,230 @@
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.subtitle {
+    opacity: 0.6;
+    font-size: 1.1rem;
+}
+
+.listWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.daySection {
+    background: hsla(222, 47%, 15%, 0.3);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+}
+
+.dayHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.dayHeader h2 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.addBtn {
+    background: hsla(210, 100%, 50%, 0.1);
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addBtn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.dayTitle {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.sessionGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.adminCard {
+    padding: 1.25rem !important;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.hiddenCard {
+    opacity: 0.6;
+    background: rgba(0, 0, 0, 0.4) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.hiddenBadge {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    background: #64748b;
+    color: white;
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.displayInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mainInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.cardActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.hideBtn {
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 2px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.hideBtn:hover {
+    opacity: 1;
+}
+
+.editBtn {
+    background: hsla(14, 100%, 57%, 0.1);
+    border: 1px solid var(--secondary);
+    color: var(--secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.formGroup label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.formGroup input,
+.formGroup select {
+    background: hsla(0, 0%, 100%, 0.05);
+    border: 1px solid var(--border);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    outline: none;
+}
+
+.formGroup input:focus {
+    border-color: var(--primary);
+}
+
+.formActions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+/* Modal */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    width: 90%;
+    max-width: 450px;
+    padding: 2.5rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modal h3 {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
+
+.modal p {
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.modalActions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.modalActions button {
+    flex: 1;
+}
