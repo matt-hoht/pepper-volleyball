@@ -11,7 +11,11 @@ interface FeedbackSectionProps {
 export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
     const [skillLevel, setSkillLevel] = useState(3); // 1 = Rec, 5 = Comp
     const [crowdLevel, setCrowdLevel] = useState<string | null>(null);
-    const [stats, setStats] = useState<any>(null);
+    const [stats, setStats] = useState<{ skillSum: number, skillCount: number, crowdVotes: { [key: string]: number } }>({
+        skillSum: 0,
+        skillCount: 0,
+        crowdVotes: { 'Empty': 0, 'Moderate': 0, 'Full': 0 }
+    });
     const [submitting, setSubmitting] = useState(false);
     const [hasVoted, setHasVoted] = useState({ skill: false, crowd: false });
 
@@ -26,33 +30,34 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
         }
     }, [gymId]);
 
+    const fetchStats = async () => {
+        const { data } = await supabase
+            .from('reviews')
+            .select('skill_level, crowd_level')
+            .eq('gym_name', gymId);
+
+        if (data) {
+            const skillVotes = data.filter(d => d.skill_level !== null);
+            const skillSum = skillVotes.reduce((acc, curr) => acc + curr.skill_level, 0);
+            const skillCount = skillVotes.length;
+
+            const crowdVotes: { [key: string]: number } = { 'Empty': 0, 'Moderate': 0, 'Full': 0 };
+            data.forEach(d => {
+                if (d.crowd_level && crowdVotes[d.crowd_level] !== undefined) {
+                    crowdVotes[d.crowd_level]++;
+                }
+            });
+
+            setStats({
+                skillSum,
+                skillCount,
+                crowdVotes
+            });
+        }
+    };
+
     // Fetch current stats on mount
     React.useEffect(() => {
-        const fetchStats = async () => {
-            const { data, error } = await supabase
-                .from('reviews')
-                .select('skill_level, crowd_level')
-                .eq('gym_name', gymId);
-
-            if (data) {
-                const skillVotes = data.filter(d => d.skill_level !== null);
-                const skillSum = skillVotes.reduce((acc, curr) => acc + curr.skill_level, 0);
-                const skillCount = skillVotes.length;
-
-                const crowdVotes: { [key: string]: number } = { 'Empty': 0, 'Moderate': 0, 'Full': 0 };
-                data.forEach(d => {
-                    if (d.crowd_level && crowdVotes[d.crowd_level] !== undefined) {
-                        crowdVotes[d.crowd_level]++;
-                    }
-                });
-
-                setStats({
-                    skillSum,
-                    skillCount,
-                    crowdVotes
-                });
-            }
-        };
         fetchStats();
     }, [gymId]);
 
@@ -71,16 +76,8 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
             if (error) throw error;
 
-            // Update stats locally
-            const newStats = { ...stats };
-            if (type === 'skill') {
-                newStats.skillSum = (newStats.skillSum || 0) + value;
-                newStats.skillCount = (newStats.skillCount || 0) + 1;
-            } else {
-                newStats.crowdVotes = { ...newStats.crowdVotes };
-                newStats.crowdVotes[value] = (newStats.crowdVotes[value] || 0) + 1;
-            }
-            setStats(newStats);
+            // Refetch fresh stats from the DB to be 100% sure
+            await fetchStats();
 
             // Persist the vote locally
             const newVoted = {
@@ -93,8 +90,10 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
             localStorage.setItem(`voted_${gymId}`, JSON.stringify(newVoted));
         } catch (e) {
             console.error('Failed to submit feedback:', e);
+            alert('Could not save your response. Please try again.');
+        } finally {
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     const avgSkill = stats?.skillCount > 0 ? (stats.skillSum / stats.skillCount).toFixed(1) : null;
