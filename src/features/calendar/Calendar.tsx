@@ -14,7 +14,7 @@ const HOUR_HEIGHT = 80; // pixels per hour
 type ViewType = 'Day' | 'Week';
 
 export const Calendar: React.FC = () => {
-    const [view, setView] = React.useState<'Day' | 'Week' | 'Month'>('Week');
+    const [view, setView] = React.useState<'Day' | 'Week' | 'Month'>('Day');
     const [selectedDate, setSelectedDate] = React.useState(new Date());
     const [scheduleData, setScheduleData] = React.useState<Session[]>([]);
     const [activeMobileDay, setActiveMobileDay] = React.useState<string>('');
@@ -51,7 +51,7 @@ export const Calendar: React.FC = () => {
         const dayName = selectedDate.toLocaleDateString('en-US', { weekday: 'short' });
         const daySessions = (scheduleData as Session[]).filter(s => s.day === dayName && !s.hidden);
         return calculateOverlaps(daySessions);
-    }, [selectedDate]);
+    }, [selectedDate, scheduleData]);
 
     React.useEffect(() => {
         if (view === 'Day' && scrollContainerRef.current) {
@@ -79,7 +79,7 @@ export const Calendar: React.FC = () => {
                 }
             });
         }
-    }, [view, currentViewData]);
+    }, [view, currentViewData, scheduleData]);
 
 
     const navigate = (direction: number) => {
