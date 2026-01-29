@@ -191,3 +191,42 @@
 .calendarSection {
     margin-top: 4rem;
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .header {
+        margin-bottom: 2rem;
+    }
+
+    .header h1 {
+        font-size: 2.25rem;
+    }
+
+    .date {
+        font-size: 1.1rem;
+    }
+
+    .sectionTitle {
+        font-size: 1.25rem;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .geoBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .originIndicator {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.8rem;
+    }
+
+    .calendarSection {
+        margin-top: 2rem;
+    }
+}

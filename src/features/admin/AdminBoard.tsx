@@ -1,17 +1,25 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './AdminBoard.module.css';
-import scheduleData from '@/data/schedule.json';
+import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Session } from '../calendar/calendarUtils';
 
 
 export const AdminBoard: React.FC = () => {
-    const [schedule, setSchedule] = useState<Session[]>(scheduleData as Session[]);
+    const [schedule, setSchedule] = useState<Session[]>([]);
     const [editingSession, setEditingSession] = useState<{ index: number; data: Session } | null>(null);
     const [isAdding, setIsAdding] = useState<{ day: string } | null>(null);
+
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            const { data } = await supabase.from('sessions').select('*').order('day');
+            if (data) setSchedule(data as Session[]);
+        }
+        fetchSchedule();
+    }, []);
     const [showConfirm, setShowConfirm] = useState<{ type: 'single' | 'recurring', data: Session, original: Session, index: number } | null>(null);
     const [showModal, setShowModal] = useState(false);
 
@@ -43,50 +51,75 @@ export const AdminBoard: React.FC = () => {
     };
 
     const saveSchedule = async (newSchedule: Session[]) => {
-        try {
-            const res = await fetch('/api/admin/schedule', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessions: newSchedule }),
-            });
-            if (!res.ok) {
-                throw new Error('Failed to save schedule');
-            }
-            alert('Schedule updated!');
-        } catch (error) {
-            console.error('Failed to save schedule:', error);
-            alert('Failed to save changes');
-        }
+        // We'll update the logic below to handle individual row updates
     };
 
     const confirmSave = async (isRecurring: boolean) => {
         if (!editingSession) return;
 
-        const updatedSchedule = [...schedule];
         const originalSession = schedule[editingSession.index];
         const editedData = editingSession.data;
 
-        if (isRecurring) {
-            updatedSchedule.forEach((s, idx) => {
-                if (s.gym === originalSession.gym && s.day === originalSession.day) {
-                    updatedSchedule[idx] = { ...editedData, day: editedData.day, time: editedData.time };
-                }
-            });
-        } else {
-            updatedSchedule[editingSession.index] = editedData;
-        }
+        try {
+            if (isRecurring) {
+                // Update all sessions with same gym and day (using gym/day as keys if no ID)
+                const { error } = await supabase
+                    .from('sessions')
+                    .update({
+                        time: editedData.time,
+                        address: editedData.address,
+                        cost: editedData.cost,
+                        notes: editedData.notes
+                    })
+                    .eq('gym', originalSession.gym)
+                    .eq('day', originalSession.day);
 
-        setSchedule(updatedSchedule);
-        await saveSchedule(updatedSchedule);
-        setEditingSession(null);
-        setShowModal(false); // For the old modal
+                if (error) throw error;
+            } else {
+                // Update single session. Using id if exists, fallback to gym/day/time
+                const query = supabase.from('sessions').update(editedData);
+                if ((originalSession as any).id) {
+                    query.eq('id', (originalSession as any).id);
+                } else {
+                    query.eq('gym', originalSession.gym).eq('day', originalSession.day).eq('time', originalSession.time);
+                }
+                const { error } = await query;
+                if (error) throw error;
+            }
+
+            // Refresh local state
+            const { data } = await supabase.from('sessions').select('*').order('day');
+            if (data) setSchedule(data as Session[]);
+
+            setEditingSession(null);
+            setShowModal(false);
+            alert('Updated successfully!');
+        } catch (err) {
+            console.error('Save error:', err);
+            alert('Failed to save change');
+        }
     };
 
     const handleToggleVisibility = async (index: number) => {
-        const newSchedule = [...schedule];
-        newSchedule[index] = { ...newSchedule[index], hidden: !newSchedule[index].hidden };
-        setSchedule(newSchedule);
-        await saveSchedule(newSchedule);
+        const session = schedule[index];
+        const newHidden = !session.hidden;
+
+        try {
+            const query = supabase.from('sessions').update({ hidden: newHidden });
+            if ((session as any).id) {
+                query.eq('id', (session as any).id);
+            } else {
+                query.eq('gym', session.gym).eq('day', session.day).eq('time', session.time);
+            }
+            const { error } = await query;
+            if (error) throw error;
+
+            const updated = [...schedule];
+            updated[index] = { ...session, hidden: newHidden };
+            setSchedule(updated);
+        } catch (err) {
+            alert('Failed to update visibility');
+        }
     };
 
     const handleAddNew = async (e: React.FormEvent) => {
@@ -104,13 +137,19 @@ export const AdminBoard: React.FC = () => {
             cost: formData.get('cost') as string,
             notes: formData.get('notes') as string,
             status: 'Admin Added',
-            hidden: false // New sessions are visible by default
+            hidden: false
         };
 
-        const newSchedule = [...schedule, newSession];
-        setSchedule(newSchedule);
-        await saveSchedule(newSchedule);
-        setIsAdding(null);
+        try {
+            const { error } = await supabase.from('sessions').insert([newSession]);
+            if (error) throw error;
+
+            const { data } = await supabase.from('sessions').select('*').order('day');
+            if (data) setSchedule(data as Session[]);
+            setIsAdding(null);
+        } catch (err) {
+            alert('Failed to add session');
+        }
     };
 
 

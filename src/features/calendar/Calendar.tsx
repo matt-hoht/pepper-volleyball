@@ -2,10 +2,10 @@
 
 import React, { useState, useMemo } from 'react';
 import styles from './Calendar.module.css';
-import scheduleData from '@/data/schedule.json';
+import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { calculateOverlaps, Session } from './calendarUtils';
+import { calculateOverlaps, Session, parseTime } from './calendarUtils';
 
 import { FeedbackSection } from '@/components/feedback/FeedbackSection';
 
@@ -14,10 +14,37 @@ const HOUR_HEIGHT = 80; // pixels per hour
 type ViewType = 'Day' | 'Week';
 
 export const Calendar: React.FC = () => {
-    const [view, setView] = useState<ViewType>('Day');
-    const [selectedDate, setSelectedDate] = useState(new Date());
-    const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+    const [view, setView] = React.useState<'Day' | 'Week' | 'Month'>('Week');
+    const [selectedDate, setSelectedDate] = React.useState(new Date());
+    const [scheduleData, setScheduleData] = React.useState<Session[]>([]);
+    const [activeMobileDay, setActiveMobileDay] = React.useState<string>('');
+
+    React.useEffect(() => {
+        const fetchSessions = async () => {
+            const { data } = await supabase.from('sessions').select('*');
+            if (data) setScheduleData(data as Session[]);
+        };
+        fetchSessions();
+    }, []);
+    const [selectedSession, setSelectedSession] = React.useState<Session | null>(null);
     const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+    const mobileScrollRef = React.useRef<HTMLDivElement>(null);
+    const dayRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekDates = useMemo(() => {
+        const start = new Date(selectedDate);
+        start.setDate(selectedDate.getDate() - selectedDate.getDay());
+        return daysOfWeek.map((day, i) => {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            return {
+                name: day,
+                dateLabel: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            };
+        });
+    }, [selectedDate]);
+
 
     // Filter and process data based on current view
     const currentViewData = useMemo(() => {
@@ -27,19 +54,33 @@ export const Calendar: React.FC = () => {
     }, [selectedDate]);
 
     React.useEffect(() => {
-        if (scrollContainerRef.current && view === 'Day') {
-            // Find the earliest start time in currentViewData
+        if (view === 'Day' && scrollContainerRef.current) {
             if (currentViewData.length > 0) {
                 const earliestStart = Math.min(...currentViewData.map(s => s.start));
-                // Scroll to earliest session - 30 mins buffer for context, but not before 12am
                 const scrollTarget = Math.max(0, earliestStart - 30);
                 scrollContainerRef.current.scrollTop = (scrollTarget / 60) * HOUR_HEIGHT;
             } else {
-                // Fallback to 8 AM if no sessions
                 scrollContainerRef.current.scrollTop = 8 * HOUR_HEIGHT;
             }
+        } else if (view === 'Week' && mobileScrollRef.current) {
+            // Wait for DOM to be ready
+            requestAnimationFrame(() => {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const todayName = days[new Date().getDay()];
+                const todayElement = dayRefs.current[todayName];
+                if (todayElement && mobileScrollRef.current) {
+                    // Check if we are on desktop (horizontal scroll) or mobile (vertical scroll)
+                    const isDesktop = window.innerWidth > 768;
+                    if (isDesktop) {
+                        todayElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                    } else {
+                        mobileScrollRef.current.scrollTop = todayElement.offsetTop;
+                    }
+                }
+            });
         }
     }, [view, currentViewData]);
+
 
     const navigate = (direction: number) => {
         const diff = view === 'Day' ? 86400000 : 7 * 86400000;
@@ -56,7 +97,6 @@ export const Calendar: React.FC = () => {
         return `${format(start)} - ${format(end)}`;
     };
 
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
         <div className={`${styles.calendarContainer} glass`}>
@@ -76,10 +116,16 @@ export const Calendar: React.FC = () => {
                 <div className={styles.navigation}>
                     <Button variant="glass" size="sm" onClick={() => navigate(-1)}>←</Button>
                     <Button variant="glass" size="sm" onClick={() => setSelectedDate(new Date())}>Today</Button>
-                    <h2 className={styles.currentDateDisplay}>
+                    <h2 className={`${styles.currentDateDisplay} ${styles.desktopDate}`}>
                         {view === 'Day'
                             ? selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
                             : getWeekRange()
+                        }
+                    </h2>
+                    <h2 className={`${styles.currentDateDisplay} ${styles.mobileDate}`}>
+                        {view === 'Day'
+                            ? selectedDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                            : 'Weekly Schedule'
                         }
                     </h2>
                     <Button variant="glass" size="sm" onClick={() => navigate(1)}>→</Button>
@@ -88,67 +134,100 @@ export const Calendar: React.FC = () => {
 
             <div className={styles.viewContent}>
                 {view === 'Day' && (
-                    <div className={styles.scrollWrapper} ref={scrollContainerRef}>
-                        <div className={styles.dayGrid}>
-                            <div className={styles.timeColumn}>
-                                {Array.from({ length: 24 }).map((_, i) => (
-                                    <div key={i} className={styles.timeSlot} style={{ height: HOUR_HEIGHT }}>
-                                        {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
-                                    </div>
-                                ))}
-                            </div>
-                            <div
-                                className={styles.eventsColumn}
-                                style={{ height: 24 * HOUR_HEIGHT }}
-                            >
-                                {currentViewData.map((session, i) => (
-                                    <Card
-                                        key={i}
-                                        className={styles.eventCard}
-                                        onClick={() => setSelectedSession(session)}
-                                        style={{
-                                            position: 'absolute',
-                                            top: `${(session.start / 60) * HOUR_HEIGHT}px`,
-                                            height: `${((session.end - session.start) / 60) * HOUR_HEIGHT}px`,
-                                            left: `${session.left}%`,
-                                            width: `${session.width}%`,
-                                            padding: '4px',
-                                            cursor: 'pointer'
-                                        }}
-                                    >
-                                        <p className={styles.eventTimeShadow}>{session.time}</p>
-                                        <p className={styles.eventGymSmall}>{session.gym}</p>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-                {view === 'Week' && (
-                    <div className={styles.weekGrid}>
-                        {daysOfWeek.map(day => (
-                            <div key={day} className={styles.weekDayColumn}>
-                                <div className={styles.weekDayHeader}>{day}</div>
-                                <div className={styles.weekEvents}>
-                                    {calculateOverlaps((scheduleData as Session[]).filter(s => s.day === day && !s.hidden)).map((s, i) => (
-                                        <div
-                                            key={i}
-                                            className={styles.miniEvent}
-                                            onClick={() => setSelectedSession(s)}
-                                            style={{
-                                                top: (s.start / 1440) * 100 + '%',
-                                                left: s.left + '%',
-                                                width: s.width + '%',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            <span className={styles.miniTime}>{s.time.split('-')[0]}</span>
-                                            {s.gym}
+                    <>
+                        <div className={`${styles.scrollWrapper} ${styles.desktopOnly}`} ref={scrollContainerRef}>
+                            <div className={styles.dayGrid}>
+                                <div className={styles.timeColumn}>
+                                    {Array.from({ length: 24 }).map((_, i) => (
+                                        <div key={i} className={styles.timeSlot} style={{ height: HOUR_HEIGHT }}>
+                                            {i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`}
                                         </div>
                                     ))}
                                 </div>
+                                <div
+                                    className={styles.eventsColumn}
+                                    style={{ height: 24 * HOUR_HEIGHT }}
+                                >
+                                    {currentViewData.map((session, i) => (
+                                        <Card
+                                            key={i}
+                                            className={styles.eventCard}
+                                            onClick={() => setSelectedSession(session)}
+                                            style={{
+                                                position: 'absolute',
+                                                top: `${(session.start / 60) * HOUR_HEIGHT}px`,
+                                                height: `${((session.end - session.start) / 60) * HOUR_HEIGHT}px`,
+                                                left: `${session.left}%`,
+                                                width: `${session.width}%`,
+                                                padding: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            <p className={styles.eventTimeShadow}>{session.time}</p>
+                                            <p className={styles.eventGymSmall}>{session.gym}</p>
+                                        </Card>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
+                        </div>
+                        <div className={`${styles.mobileListView} ${styles.mobileOnly}`}>
+                            {currentViewData.length > 0 ? (
+                                currentViewData.map((session, i) => (
+                                    <Card key={i} className={styles.mobileSessionCard} onClick={() => setSelectedSession(session)}>
+                                        <div className={styles.mobileSessionHeader}>
+                                            <div className={styles.mobileSessionMeta}>
+                                                <span className={styles.mobileSessionTime}>{session.time}</span>
+                                                <span className={styles.mobileSessionDayLabel}>{session.day}</span>
+                                            </div>
+                                            <span className={styles.mobileSessionGym}>{session.gym}</span>
+                                        </div>
+                                        <p className={styles.mobileSessionAddress}>{session.address}</p>
+                                    </Card>
+                                ))
+                            ) : (
+                                <p className={styles.noSessions}>No sessions scheduled for this day.</p>
+                            )}
+                        </div>
+                    </>
+                )}
+                {view === 'Week' && (
+                    <div className={`${styles.mobileListView} ${styles.unifiedListView} ${styles.mobileScrollWrapper}`} ref={mobileScrollRef}>
+                        {weekDates.map(wd => {
+                            const daySessions = (scheduleData as Session[])
+                                .filter(s => s.day === wd.name && !s.hidden)
+                                .map(s => {
+                                    const { start, end } = parseTime(s.time);
+                                    return { ...s, start, end };
+                                })
+                                .sort((a, b) => a.start - b.start);
+
+                            if (daySessions.length === 0) return null;
+                            return (
+                                <div
+                                    key={wd.name}
+                                    className={styles.mobileDayGroup}
+                                    ref={el => { dayRefs.current[wd.name] = el; }}
+                                    data-day={wd.name}
+                                    data-date={wd.dateLabel}
+                                >
+                                    <h3 className={styles.mobileDayHeader}>{wd.name} ({wd.dateLabel})</h3>
+                                    <div className={styles.mobileDaySessions}>
+                                        {daySessions.map((session, i) => (
+                                            <Card key={i} className={styles.mobileSessionCard} onClick={() => setSelectedSession(session)}>
+                                                <div className={styles.mobileSessionHeader}>
+                                                    <div className={styles.mobileSessionMeta}>
+                                                        <span className={styles.mobileSessionTime}>{session.time}</span>
+                                                        <span className={styles.mobileSessionDayLabel}>{session.day}</span>
+                                                    </div>
+                                                    <span className={styles.mobileSessionGym}>{session.gym}</span>
+                                                </div>
+                                                <p className={styles.mobileSessionAddress}>{session.address}</p>
+                                            </Card>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
             </div>

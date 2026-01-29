@@ -1,17 +1,33 @@
 "use client";
 
 import React from 'react';
-import { Card } from '@/components/ui/Card';
-import { Calendar } from '@/features/calendar/Calendar';
-import scheduleData from '@/data/schedule.json';
+import { supabase } from '@/lib/supabase';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateDistance, estimateTravelTime } from '@/utils/geoUtils';
 import { FeedbackSection } from '@/components/feedback/FeedbackSection';
 import { Session } from '../calendar/calendarUtils';
 import styles from './Dashboard.module.css';
+import { Card } from '@/components/ui/Card';
+import { Calendar } from '@/features/calendar/Calendar';
 
-export const Dashboard: React.FC = () => {
+export const Dashboard = () => {
+    const [scheduleData, setScheduleData] = React.useState<Session[]>([]);
+    const [userLocation, setUserLocation] = React.useState<{ lat: number; lng: number } | null>(null);
     const { location, address: originAddress, loading, getLocation } = useGeolocation();
+
+    React.useEffect(() => {
+        const fetchSessions = async () => {
+            const { data, error } = await supabase
+                .from('sessions')
+                .select('*')
+                .order('day', { ascending: true });
+
+            if (data) {
+                setScheduleData(data as Session[]);
+            }
+        };
+        fetchSessions();
+    }, []);
     const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
     const todaysSessions = (scheduleData as Session[]).filter(session => session.day === today && !session.hidden);
 

@@ -32,6 +32,12 @@ main {
     background: radial-gradient(circle at 50% 0%, hsla(199, 89%, 48%, 0.1) 0%, transparent 50%);
 }
 
+@media (max-width: 768px) {
+    main {
+        padding: 1rem;
+    }
+}
+
 .glass {
     background: var(--card-bg);
     backdrop-filter: var(--glass-blur);
