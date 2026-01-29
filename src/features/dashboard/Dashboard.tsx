@@ -12,18 +12,26 @@ import { Calendar } from '@/features/calendar/Calendar';
 
 export const Dashboard = () => {
     const [scheduleData, setScheduleData] = React.useState<Session[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
     const [userLocation, setUserLocation] = React.useState<{ lat: number; lng: number } | null>(null);
     const { location, address: originAddress, loading, getLocation } = useGeolocation();
 
     React.useEffect(() => {
         const fetchSessions = async () => {
-            const { data, error } = await supabase
-                .from('sessions')
-                .select('*')
-                .order('day', { ascending: true });
+            setIsLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('sessions')
+                    .select('*')
+                    .order('day', { ascending: true });
 
-            if (data) {
-                setScheduleData(data as Session[]);
+                if (data) {
+                    setScheduleData(data as Session[]);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchSessions();
