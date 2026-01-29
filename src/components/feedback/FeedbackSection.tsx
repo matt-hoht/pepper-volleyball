@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import styles from './FeedbackSection.module.css';
+import { supabase } from '@/lib/supabase';
 
 interface FeedbackSectionProps {
     gymId: string;
@@ -27,11 +28,32 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
     // Fetch current stats on mount
     React.useEffect(() => {
-        fetch(`/api/feedback?gymId=${encodeURIComponent(gymId)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data && !data.error) setStats(data);
-            });
+        const fetchStats = async () => {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('skill_level, crowd_level')
+                .eq('gym_name', gymId);
+
+            if (data) {
+                const skillVotes = data.filter(d => d.skill_level !== null);
+                const skillSum = skillVotes.reduce((acc, curr) => acc + curr.skill_level, 0);
+                const skillCount = skillVotes.length;
+
+                const crowdVotes: { [key: string]: number } = { 'Empty': 0, 'Moderate': 0, 'Full': 0 };
+                data.forEach(d => {
+                    if (d.crowd_level && crowdVotes[d.crowd_level] !== undefined) {
+                        crowdVotes[d.crowd_level]++;
+                    }
+                });
+
+                setStats({
+                    skillSum,
+                    skillCount,
+                    crowdVotes
+                });
+            }
+        };
+        fetchStats();
     }, [gymId]);
 
     const submitFeedback = async (type: 'skill' | 'crowd', value: any) => {
@@ -39,17 +61,26 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
         setSubmitting(true);
         try {
-            const res = await fetch('/api/feedback', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    gymId,
-                    skillLevel: type === 'skill' ? value : undefined,
-                    crowdLevel: type === 'crowd' ? value : undefined,
-                }),
-            });
-            const updated = await res.json();
-            setStats(updated);
+            const { error } = await supabase
+                .from('reviews')
+                .insert([{
+                    gym_name: gymId,
+                    skill_level: type === 'skill' ? value : null,
+                    crowd_level: type === 'crowd' ? value : null,
+                }]);
+
+            if (error) throw error;
+
+            // Update stats locally
+            const newStats = { ...stats };
+            if (type === 'skill') {
+                newStats.skillSum = (newStats.skillSum || 0) + value;
+                newStats.skillCount = (newStats.skillCount || 0) + 1;
+            } else {
+                newStats.crowdVotes = { ...newStats.crowdVotes };
+                newStats.crowdVotes[value] = (newStats.crowdVotes[value] || 0) + 1;
+            }
+            setStats(newStats);
 
             // Persist the vote locally
             const newVoted = {
@@ -61,7 +92,7 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
             setHasVoted(newVoted);
             localStorage.setItem(`voted_${gymId}`, JSON.stringify(newVoted));
         } catch (e) {
-            console.error('Failed to submit feedback');
+            console.error('Failed to submit feedback:', e);
         }
         setSubmitting(false);
     };
