@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './FeedbackSection.module.css';
 import { supabase } from '@/lib/supabase';
 
@@ -123,10 +124,11 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
     return (
         <div className={styles.container}>
-            {notification && (
+            {notification && createPortal(
                 <div className={`${styles.notification} ${styles[notification.type]}`}>
                     {notification.message}
-                </div>
+                </div>,
+                document.body
             )}
             <div className={styles.metric}>
                 <div className={styles.metricHeader}>
