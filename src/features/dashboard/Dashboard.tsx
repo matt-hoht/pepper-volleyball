@@ -91,7 +91,7 @@ export const Dashboard = () => {
                                     Share
                                 </button>
                             </div>
-                            <FeedbackSection gymId={session.gym} showToast={false} />
+                            <FeedbackSection gymId={session.gym} />
                         </Card>
                     ))}
                     {todaysSessions.length === 0 && (

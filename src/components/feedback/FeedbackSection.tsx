@@ -6,10 +6,9 @@ import { supabase } from '@/lib/supabase';
 
 interface FeedbackSectionProps {
     gymId: string;
-    showToast?: boolean;
 }
 
-export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId, showToast = true }) => {
+export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
     const [skillLevel, setSkillLevel] = useState(3); // 1 = Rec, 5 = Comp
     const [crowdLevel, setCrowdLevel] = useState<string | null>(null);
     const [stats, setStats] = useState<{ skillSum: number, skillCount: number, crowdVotes: { [key: string]: number } }>({
@@ -124,7 +123,7 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId, showToa
 
     return (
         <div className={styles.container}>
-            {showToast && notification && (
+            {notification && (
                 <div className={`${styles.notification} ${styles[notification.type]}`}>
                     {notification.message}
                 </div>
