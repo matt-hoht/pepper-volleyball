@@ -18,6 +18,13 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [hasVoted, setHasVoted] = useState({ skill: false, crowd: false });
+    const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Guard against hydration mismatch
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Load user's previous votes from localStorage
     React.useEffect(() => {
@@ -76,7 +83,11 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
             if (error) throw error;
 
-            // Refetch fresh stats from the DB to be 100% sure
+            // Show success notification
+            setNotification({ message: 'Response saved! Thanks for contributing. 🏐', type: 'success' });
+            setTimeout(() => setNotification(null), 3000);
+
+            // Refetch fresh stats from the DB
             await fetchStats();
 
             // Persist the vote locally
@@ -88,9 +99,13 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
             };
             setHasVoted(newVoted);
             localStorage.setItem(`voted_${gymId}`, JSON.stringify(newVoted));
-        } catch (e) {
+        } catch (e: any) {
             console.error('Failed to submit feedback:', e);
-            alert('Could not save your response. Please try again.');
+            setNotification({
+                message: `Could not save response: ${e.message || 'Unknown error'}`,
+                type: 'error'
+            });
+            setTimeout(() => setNotification(null), 5000);
         } finally {
             setSubmitting(false);
         }
@@ -104,8 +119,15 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
         { label: 'Full', icon: '🔥' },
     ];
 
+    if (!isMounted) return <div className={styles.container} style={{ height: '200px' }} />;
+
     return (
         <div className={styles.container}>
+            {notification && (
+                <div className={`${styles.notification} ${styles[notification.type]}`}>
+                    {notification.message}
+                </div>
+            )}
             <div className={styles.metric}>
                 <div className={styles.metricHeader}>
                     <span>Skill Level</span>
