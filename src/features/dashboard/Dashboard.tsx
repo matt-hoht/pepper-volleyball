@@ -4,6 +4,7 @@ import React from 'react';
 import { supabase } from '@/lib/supabase';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { calculateDistance, estimateTravelTime } from '@/utils/geoUtils';
+import { useToast } from '@/context/ToastContext';
 import { FeedbackSection } from '@/components/feedback/FeedbackSection';
 import { Session } from '../calendar/calendarUtils';
 import styles from './Dashboard.module.css';
@@ -15,6 +16,7 @@ export const Dashboard = () => {
     const [isLoading, setIsLoading] = React.useState(true);
     const [userLocation, setUserLocation] = React.useState<{ lat: number; lng: number } | null>(null);
     const { location, address: originAddress, loading, getLocation } = useGeolocation();
+    const { showToast } = useToast();
 
     React.useEffect(() => {
         const fetchSessions = async () => {
@@ -73,18 +75,29 @@ export const Dashboard = () => {
                                         🚗 {estimateTravelTime(calculateDistance(location.latitude, location.longitude, session.lat || 0, session.lng || 0))}
                                     </div>
                                 )}
-                                <button className={styles.copyBtn} onClick={() => navigator.clipboard.writeText(session.address)}>
+                                <button className={styles.copyBtn} onClick={() => {
+                                    navigator.clipboard.writeText(session.address);
+                                    showToast('Address copied to clipboard! 📋', 'info');
+                                }}>
                                     Copy Address
                                 </button>
                                 <button
                                     className={styles.shareBtn}
                                     onClick={() => {
+                                        const shareText = `Check out this volleyball open gym at ${session.gym} (${session.time})! \n📍 ${session.address}`;
                                         if (navigator.share) {
                                             navigator.share({
                                                 title: `Volleyball at ${session.gym}`,
-                                                text: `Check out this open gym: ${session.gym} at ${session.time}!`,
+                                                text: shareText,
                                                 url: window.location.href
+                                            }).then(() => {
+                                                showToast('Shared successfully! 🏐', 'success');
+                                            }).catch(() => {
+                                                // User cancelled share usually
                                             });
+                                        } else {
+                                            navigator.clipboard.writeText(`${shareText}\n${window.location.href}`);
+                                            showToast('Share link copied to clipboard! 🔗', 'info');
                                         }
                                     }}
                                 >

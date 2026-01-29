@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useToast } from '@/context/ToastContext';
 import styles from './FeedbackSection.module.css';
 import { supabase } from '@/lib/supabase';
 
@@ -10,6 +10,7 @@ interface FeedbackSectionProps {
 }
 
 export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
+    const { showToast } = useToast();
     const [skillLevel, setSkillLevel] = useState(3); // 1 = Rec, 5 = Comp
     const [crowdLevel, setCrowdLevel] = useState<string | null>(null);
     const [stats, setStats] = useState<{ skillSum: number, skillCount: number, crowdVotes: { [key: string]: number } }>({
@@ -19,7 +20,6 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [hasVoted, setHasVoted] = useState({ skill: false, crowd: false });
-    const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
     const [isMounted, setIsMounted] = useState(false);
 
     // Guard against hydration mismatch
@@ -85,8 +85,7 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
             if (error) throw error;
 
             // Show success notification
-            setNotification({ message: 'Response saved! Thanks for contributing. 🏐', type: 'success' });
-            setTimeout(() => setNotification(null), 3000);
+            showToast('Response saved! Thanks for contributing. 🏐', 'success');
 
             // Refetch fresh stats from the DB
             await fetchStats();
@@ -102,11 +101,7 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
             localStorage.setItem(`voted_${gymId}`, JSON.stringify(newVoted));
         } catch (e: any) {
             console.error('Failed to submit feedback:', e);
-            setNotification({
-                message: `Could not save response: ${e.message || 'Unknown error'}`,
-                type: 'error'
-            });
-            setTimeout(() => setNotification(null), 5000);
+            showToast(`Could not save response: ${e.message || 'Unknown error'}`, 'error');
         } finally {
             setSubmitting(false);
         }
@@ -124,12 +119,6 @@ export const FeedbackSection: React.FC<FeedbackSectionProps> = ({ gymId }) => {
 
     return (
         <div className={styles.container}>
-            {notification && createPortal(
-                <div className={`${styles.notification} ${styles[notification.type]}`}>
-                    {notification.message}
-                </div>,
-                document.body
-            )}
             <div className={styles.metric}>
                 <div className={styles.metricHeader}>
                     <span>Skill Level</span>

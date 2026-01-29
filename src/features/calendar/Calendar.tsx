@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { calculateOverlaps, Session, parseTime } from './calendarUtils';
 
+import { useToast } from '@/context/ToastContext';
 import { FeedbackSection } from '@/components/feedback/FeedbackSection';
 
 const HOUR_HEIGHT = 80; // pixels per hour
@@ -19,6 +20,7 @@ export const Calendar: React.FC = () => {
     const [scheduleData, setScheduleData] = React.useState<Session[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
     const [activeMobileDay, setActiveMobileDay] = React.useState<string>('');
+    const { showToast } = useToast();
 
     React.useEffect(() => {
         const fetchSessions = async () => {
@@ -263,7 +265,15 @@ export const Calendar: React.FC = () => {
                             </div>
                             <div className={styles.infoRow}>
                                 <span className={styles.infoLabel}>Address:</span>
-                                <span>{selectedSession.address}</span>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <span>{selectedSession.address}</span>
+                                    <Button variant="glass" size="sm" onClick={() => {
+                                        navigator.clipboard.writeText(selectedSession.address);
+                                        showToast('Address copied to clipboard! 📋', 'info');
+                                    }}>
+                                        Copy
+                                    </Button>
+                                </div>
                             </div>
                             {selectedSession.notes && (
                                 <div className={styles.infoRow}>
